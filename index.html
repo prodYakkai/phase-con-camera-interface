@@ -94,7 +94,6 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // Adjusted Hallway percentages slightly to make room for the YOU box in the center
         const cameraData = [
             { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
             { id: 'CAM 1B', name: 'Dining Area', top: '18%', left: '38%' },
@@ -281,14 +280,6 @@
                                         {cam.id}
                                     </button>
                                 ))}
-                                
-                                {/* YOU BOX: Centered perfectly between CAM 2B and CAM 4B */}
-                                <div 
-                                    className="absolute flex items-center justify-center w-12 h-6 bg-red-600 border-[3px] border-white text-[14px] font-sans font-bold shadow-[0_0_15px_red] z-[100]" 
-                                    style={{ top: '86%', left: '47%', transform: 'translateX(-50%)' }}
-                                >
-                                    YOU
-                                </div>
                             </div>
                         </div>
                     </div>

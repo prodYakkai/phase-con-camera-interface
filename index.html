@@ -34,7 +34,6 @@
             100% { background-position: 0 100%; }
         }
 
-        /* TITLE TWITCH EFFECT */
         @keyframes fnaf-twitch {
             0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
             92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
@@ -94,19 +93,19 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- AUTHENTIC MAP COORDINATES ---
+        // --- PIXEL-PERFECT MAP COORDINATES ---
         const cameraData = [
-            { id: 'CAM 1A', name: 'Show Stage', top: '5%', left: '42%' },
-            { id: 'CAM 1B', name: 'Dining Area', top: '22%', left: '35%' },
-            { id: 'CAM 5', name: 'Backstage', top: '15%', left: '8%' },
-            { id: 'CAM 1C', name: 'Pirate Cove', top: '42%', left: '18%' },
-            { id: 'CAM 7', name: 'Restrooms', top: '15%', left: '78%' },
-            { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' },
-            { id: 'CAM 3', top: '70%', left: '10%' },
-            { id: 'CAM 2A', top: '75%', left: '32%' },
-            { id: 'CAM 2B', top: '88%', left: '32%' },
-            { id: 'CAM 4A', top: '75%', left: '55%' },
-            { id: 'CAM 4B', top: '88%', left: '55%' }
+            { id: 'CAM 1A', name: 'Show Stage', top: '0px', left: '165px' },
+            { id: 'CAM 1B', name: 'Dining Area', top: '70px', left: '110px' },
+            { id: 'CAM 5', name: 'Backstage', top: '70px', left: '10px' },
+            { id: 'CAM 1C', name: 'Pirate Cove', top: '155px', left: '40px' },
+            { id: 'CAM 7', name: 'Restrooms', top: '95px', left: '390px' },
+            { id: 'CAM 6', name: 'Kitchen', top: '245px', left: '335px' },
+            { id: 'CAM 3', name: 'Supply Closet', top: '260px', left: '45px' },
+            { id: 'CAM 2A', name: 'West Hallway', top: '255px', left: '145px' },
+            { id: 'CAM 2B', name: 'W. Hall Corner', top: '315px', left: '145px' },
+            { id: 'CAM 4A', name: 'East Hallway', top: '255px', left: '255px' },
+            { id: 'CAM 4B', name: 'E. Hall Corner', top: '315px', left: '255px' }
         ];
 
         const App = () => {
@@ -266,69 +265,92 @@
                             {time}
                         </div>
 
-                        {/* MAP & CONTROLS */}
-                        <div className="absolute bottom-24 right-10 z-[70] w-[450px] flex flex-col items-end">
-                            <div className="text-right text-white mb-2 pr-2 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                        {/* EXACT FNAF 1 MAP & CONTROLS */}
+                        <div className="absolute bottom-24 right-10 z-[70] flex flex-col items-end">
+                            <div className="text-right text-white mb-2 pr-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                 <div className="text-3xl font-bold tracking-widest opacity-80">{(activeCamObj.name || activeCamObj.id).toUpperCase()}</div>
                                 <div className="text-2xl opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
                             </div>
                             
-                            <div className="relative w-[400px] h-[400px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mb-8">
+                            {/* Rigid Map Container (500x400) to ensure paths and buttons NEVER drift */}
+                            <div className="relative w-[500px] h-[400px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mr-4 mb-4">
                                 
-                                {/* SVG MAP LINES: FNAF 1 Logic */}
-                                <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" viewBox="0 0 400 400">
+                                <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" viewBox="0 0 500 400">
                                     <path 
                                         d="
-                                            {/* Show Stage Area */}
-                                            M160,10 H240 V65 H160 Z
+                                            {/* Dining Area */}
+                                            M110 70 h250 v150 h-250 z
                                             
-                                            {/* Dining Area Connector */}
-                                            M200,65 V85
+                                            {/* Stage & Connectors */}
+                                            M160 20 h60 v30 h-60 z
+                                            M175 50 v20  M205 50 v20
                                             
-                                            {/* Dining Area Box */}
-                                            M110,85 H300 V210 H110 Z
+                                            {/* Backstage & Connectors */}
+                                            M30 70 h35 v55 h-35 z
+                                            M65 85 h45   M65 95 h45
                                             
-                                            {/* Backstage Room & Connector */}
-                                            M110,120 H90
-                                            M10,80 H90 V180 H10 Z
+                                            {/* Pirate Cove & Connectors */}
+                                            M50 160 h45 v45 h-45 z
+                                            M95 175 h15  M95 185 h15
                                             
-                                            {/* Restrooms & Connector */}
-                                            M300,120 H320
-                                            M320,80 H390 V180 H320 Z
+                                            {/* Restrooms & Connectors */}
+                                            M380 100 h30 v100 h-30 z
+                                            M360 120 h20 M360 130 h20
                                             
-                                            {/* Pirate Cove Connector */}
-                                            M110,180 H95 V220 H110
+                                            {/* Restroom Side Boxes */}
+                                            M430 130 h20 v25 h-20 z
+                                            M410 140 h20 M410 148 h20
+                                            M440 180 h20 v20 h-20 z
+                                            M410 185 h30 M410 195 h30
                                             
-                                            {/* Kitchen Box */}
-                                            M315,220 H390 V280 H315 Z
+                                            {/* West Hall & Connectors */}
+                                            M150 240 h35 v130 h-35 z
+                                            M160 220 v20 M175 220 v20
                                             
-                                            {/* Supply Closet Box */}
-                                            M15,270 H85 V330 H15 Z
-                                            M85,300 H120
+                                            {/* East Hall & Connectors */}
+                                            M260 240 h35 v130 h-35 z
+                                            M270 220 v20 M285 220 v20
                                             
-                                            {/* Hallways */}
-                                            M120,210 V350 H170 V210 Z
-                                            M240,210 V350 H290 V210 Z
+                                            {/* Supply Closet & Connectors */}
+                                            M80 270 h45 v60 h-45 z
+                                            M125 290 h25 M125 300 h25
                                             
-                                            {/* YOU Connector */}
-                                            M170,330 H240
+                                            {/* Kitchen & Connectors */}
+                                            M320 240 h70 v60 h-70 z
+                                            M295 260 h25 M295 270 h25
+                                            
+                                            {/* Office & Connectors */}
+                                            M210 330 h25 v30 h-25 z
+                                            M185 340 h25 M185 350 h25
+                                            M235 340 h25 M235 350 h25
                                         " 
                                         fill="none" 
                                         stroke="white" 
-                                        strokeWidth="4"
+                                        strokeWidth="2"
                                     />
                                 </svg>
 
-                                {cameraData.map((cam) => (
-                                    <button key={cam.id} onClick={() => handleCameraChange(cam)} style={{ top: cam.top, left: cam.left }}
-                                        className={`absolute px-2 py-1 text-xl font-bold border-2 transition-all ${activeCamera === cam.id ? 'bg-green-500 border-green-300 text-black z-20 shadow-[0_0_15px_rgba(34,197,94,0.8)] scale-110' : 'bg-zinc-900 border-zinc-400 text-white z-10 hover:bg-zinc-600 opacity-80'}`}>
-                                        {cam.id}
-                                    </button>
-                                ))}
+                                {cameraData.map((cam) => {
+                                    const parts = cam.id.split(' ');
+                                    return (
+                                        <button 
+                                            key={cam.id} 
+                                            onClick={() => handleCameraChange(cam)} 
+                                            style={{ top: cam.top, left: cam.left }}
+                                            className={`absolute px-[6px] py-[4px] border-[2px] border-white transition-all ${activeCamera === cam.id ? 'bg-green-600 text-black z-20 shadow-[0_0_15px_rgba(34,197,94,1)]' : 'bg-black text-white z-10 hover:bg-zinc-800'}`}
+                                        >
+                                            <div className="text-left leading-none text-xl font-bold">
+                                                <div>{parts[0]}</div>
+                                                <div>{parts[1]}</div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
                                 
-                                <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-10 bg-black border-2 border-white text-[14px] font-sans font-bold z-[100]">
-                                    YOU
-                                    <div className="absolute bottom-1 w-2 h-2 bg-white"></div>
+                                {/* YOU Indicator exactly in the Office block */}
+                                <div className="absolute flex flex-col items-center justify-center text-white z-[100]" style={{ top: '330px', left: '210px', width: '25px', height: '30px' }}>
+                                    <span className="text-[10px] leading-none tracking-widest mt-1">YOU</span>
+                                    <div className="w-1.5 h-1.5 bg-white mt-1"></div>
                                 </div>
                             </div>
                         </div>

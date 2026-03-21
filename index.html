@@ -94,6 +94,300 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // FIXED CAMERA DATA: Logic-based positioning to prevent overlap
+        const cameraData = [
+            { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
+            { id: 'CAM 1B', name: 'Dining Area', top: '30%', left: '42%' },
+            { id: 'CAM 5', name: 'Backstage', top: '10%', left: '10%' },
+            { id: 'CAM 1C', name: 'Pirate Cove', top: '45%', left: '15%' },
+            { id: 'CAM 7', name: 'Restrooms', top: '15%', left: '75%' },
+            { id: 'CAM 6', name: 'Kitchen', top: '55%', left: '78%' },
+            { id: 'CAM 3', name: 'Supply Closet', top: '65%', left: '10%' },
+            { id: 'CAM 2A', name: 'West Hallway', top: '75%', left: '25%' },
+            { id: 'CAM 2B', name: 'W. Hall Corner', top: '92%', left: '25%' },
+            { id: 'CAM 4A', name: 'East Hallway', top: '75%', left: '60%' },
+            { id: 'CAM 4B', name: 'E. Hall Corner', top: '92%', left: '60%' }
+        ];
+
+        const App = () => {
+            const [isMonitorUp, setIsMonitorUp] = useState(false);
+            const [activeCamObj, setActiveCamObj] = useState(cameraData[0]);
+            const [isTransitioning, setIsTransitioning] = useState(false);
+            const [hasVideoError, setHasVideoError] = useState(false);
+            const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [isCreditsOpen, setIsCreditsOpen] = useState(false);
+            const [isStaticMuted, setIsStaticMuted] = useState(false);
+            const [isBlipMuted, setIsBlipMuted] = useState(false);
+
+            const videoRef = useRef(null);
+            const activeCamera = activeCamObj.id;
+            const blipAudio = useMemo(() => new Audio('blip.mp3'), []);
+            const audioCtxRef = useRef(null);
+            const staticNodeRef = useRef(null);
+
+            const initAudio = () => {
+                if (!audioCtxRef.current) audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtxRef.current.state === 'suspended') audioCtxRef.current.resume();
+            };
+
+            const toggleStaticAudio = (play) => {
+                initAudio();
+                const ctx = audioCtxRef.current;
+                if (play) {
+                    if (staticNodeRef.current) return;
+                    const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < ctx.sampleRate; i++) data[i] = Math.random() * 2 - 1;
+                    const noiseSource = ctx.createBufferSource();
+                    noiseSource.buffer = buffer; noiseSource.loop = true;
+                    const gainNode = ctx.createGain(); gainNode.gain.value = 0.01;
+                    noiseSource.connect(gainNode); gainNode.connect(ctx.destination);
+                    noiseSource.start(); staticNodeRef.current = noiseSource;
+                } else {
+                    if (staticNodeRef.current) { staticNodeRef.current.stop(); staticNodeRef.current.disconnect(); staticNodeRef.current = null; }
+                }
+            };
+
+            const streamUrls = {
+                'CAM 1A': 'https://2f53-2605-f500-4-4066-304d-1490-4a51-91cd.ngrok-free.app/hls/cam1a.m3u8',
+                'CAM 1B': 'https://2f53-2605-f500-4-4066-304d-1490-4a51-91cd.ngrok-free.app/hls/cam1b.m3u8',
+                'CAM 1C': 'https://2f53-2605-f500-4-4066-304d-1490-4a51-91cd.ngrok-free.app/hls/cam1c.m3u8',
+            };
+
+            useEffect(() => {
+                const interval = setInterval(() => setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+            useEffect(() => {
+                toggleStaticAudio(isMonitorUp && !isStaticMuted);
+                return () => toggleStaticAudio(false);
+            }, [isMonitorUp, isStaticMuted]);
+
+            useEffect(() => {
+                if (!isMonitorUp) return;
+                const video = videoRef.current;
+                const url = streamUrls[activeCamera];
+                let hls;
+                if (!video || !url) return;
+                if (Hls.isSupported()) {
+                    hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => { }));
+                    hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) setHasVideoError(true); });
+                }
+                return () => { if (hls) hls.destroy(); };
+            }, [activeCamera, isMonitorUp]);
+
+            const handleCameraChange = (camObj) => {
+                if (camObj.id === activeCamera) return;
+                if (!isBlipMuted) { blipAudio.currentTime = 0; blipAudio.play().catch(() => { }); }
+                setIsTransitioning(true);
+                setActiveCamObj(camObj);
+                setHasVideoError(false);
+                setTimeout(() => setIsTransitioning(false), 500);
+            };
+
+            return (
+                <div className="relative w-screen h-screen bg-black overflow-hidden select-none cursor-crosshair">
+
+                    {/* GLOBAL SCANLINES */}
+                    <div className="scanlines absolute inset-0 pointer-events-none z-[100] opacity-40"></div>
+
+                    {/* TITLE SCREEN */}
+                    {!isMonitorUp && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <img
+                                src="title.png"
+                                className="w-full h-full object-cover title-twitch grayscale contrast-125"
+                                alt="Title Screen"
+                                onError={(e) => { e.target.src = "https://via.placeholder.com/1920x1080/000000/FFFFFF?text=TITLE.PNG+NOT+FOUND"; }}
+                            />
+                            <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
+
+                            <div className="absolute top-20 left-20">
+                                <p className="text-4xl opacity-60 tracking-[0.3em]">SECURITY SYSTEM</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MONITOR INTERFACE */}
+                    <div className={`absolute inset-0 w-full h-full transition-transform duration-[600ms] ease-in-out z-20 ${isMonitorUp ? 'translate-y-0' : 'translate-y-[120%]'}`}>
+                        <div className="absolute inset-0 z-[60] shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] pointer-events-none"></div>
+                        <div className="absolute inset-0 z-40 fnaf-static-layer opacity-[0.12] pointer-events-none mix-blend-screen"></div>
+                        {isTransitioning && <div className="absolute inset-0 z-50 fnaf-static-layer opacity-[0.85] pointer-events-none mix-blend-normal"></div>}
+
+                        <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
+                            <video ref={videoRef} className={`w-full h-full object-cover grayscale contrast-125 opacity-70 ${!isTransitioning && !hasVideoError ? 'block' : 'hidden'}`} autoPlay muted playsInline />
+                            {(!streamUrls[activeCamera] || hasVideoError) && <div className="absolute inset-0 fnaf-static-layer opacity-40 mix-blend-screen"></div>}
+                        </div>
+
+                        {/* LEFT SIDE UI */}
+                        <div className="absolute top-8 left-10 z-[80] flex flex-col items-start gap-4">
+                            <div className="flex items-center gap-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                                <div className="w-5 h-5 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
+                                <span className="text-white text-5xl tracking-widest">REC</span>
+                            </div>
+
+                            <button onClick={() => { setIsMenuOpen(!isMenuOpen); setIsCreditsOpen(false); }}
+                                className="px-6 py-2 border-2 border-white/50 bg-black/60 text-white/80 hover:bg-white/20 hover:text-white transition-all text-2xl tracking-widest backdrop-blur-sm">
+                                {isMenuOpen ? 'CLOSE' : 'OPTIONS'}
+                            </button>
+
+                            {isMenuOpen && (
+                                <div className="flex flex-col gap-2 p-3 bg-black/80 border-2 border-white/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.8)]">
+                                    <button onClick={() => setIsStaticMuted(!isStaticMuted)}
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isStaticMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        STATIC: {isStaticMuted ? 'MUTED' : 'ON'}
+                                    </button>
+                                    <button onClick={() => setIsBlipMuted(!isBlipMuted)}
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isBlipMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        BLIPS: {isBlipMuted ? 'MUTED' : 'ON'}
+                                    </button>
+                                    <button onClick={() => setIsCreditsOpen(!isCreditsOpen)}
+                                        className="px-4 py-2 border-2 border-white/50 bg-zinc-800 text-xl tracking-widest hover:bg-zinc-700">
+                                        CREDITS
+                                    </button>
+
+                                    {isCreditsOpen && (
+                                        <div className="mt-2 p-3 border-t-2 border-white/20 text-lg tracking-widest leading-tight">
+                                            <p className="text-green-400">PROJECT LEAD: jioriku</p>
+                                            <p>SYSTEMS ARCHITECT: GEMINI</p>
+                                            <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* RIGHT SIDE UI */}
+                        <div className="absolute top-8 right-10 z-[70] text-right text-5xl tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                            {time}
+                        </div>
+
+                        {/* FIXED MAP & CONTROLS */}
+                        <div className="absolute bottom-24 right-10 z-[70] w-[450px] flex flex-col items-end">
+                            <div className="text-right text-white mb-2 pr-2 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                                <div className="text-3xl font-bold tracking-widest opacity-80">{activeCamObj.name.toUpperCase()}</div>
+                                <div className="text-2xl opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
+                            </div>
+                            
+                            {/* MAP CONTAINER */}
+                            <div className="relative w-[400px] h-[400px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mb-8">
+                                
+                                {/* LOGICAL WIREFRAME MAP */}
+                                <div className="absolute inset-0 pointer-events-none opacity-40">
+                                    {/* Show Stage Area */}
+                                    <div className="absolute border-2 border-white w-[25%] h-[12%] top-[2%] left-[38%]"></div>
+                                    {/* Dining Area Area */}
+                                    <div className="absolute border-2 border-white w-[55%] h-[40%] top-[14%] left-[23%]"></div>
+                                    {/* Backstage Room */}
+                                    <div className="absolute border-2 border-white w-[20%] h-[18%] top-[10%] left-[2%]"></div>
+                                    {/* Restrooms Area */}
+                                    <div className="absolute border-2 border-white w-[22%] h-[20%] top-[14%] left-[78%]"></div>
+                                    {/* West Hallway */}
+                                    <div className="absolute border-2 border-white w-[12%] h-[35%] top-[54%] left-[25%]"></div>
+                                    {/* East Hallway */}
+                                    <div className="absolute border-2 border-white w-[12%] h-[35%] top-[54%] left-[63%]"></div>
+                                    {/* Pirate Cove Room */}
+                                    <div className="absolute border-2 border-white w-[15%] h-[15%] top-[40%] left-[8%]"></div>
+                                    {/* Kitchen Area */}
+                                    <div className="absolute border-2 border-white w-[22%] h-[25%] top-[54%] left-[78%]"></div>
+                                    {/* Supply Closet Area */}
+                                    <div className="absolute border-2 border-white w-[15%] h-[15%] top-[60%] left-[8%]"></div>
+                                </div>
+
+                                {/* CAMERA BUTTONS */}
+                                {cameraData.map((cam) => (
+                                    <button key={cam.id} onClick={() => handleCameraChange(cam)} style={{ top: cam.top, left: cam.left }}
+                                        className={`absolute px-2 py-1 text-xl font-bold border-2 transition-all ${activeCamera === cam.id ? 'bg-green-500 border-green-300 text-black z-20 shadow-[0_0_15px_rgba(34,197,94,0.8)] scale-110' : 'bg-zinc-900 border-zinc-400 text-white z-10 hover:bg-zinc-600 opacity-80'}`}>
+                                        {cam.id}
+                                    </button>
+                                ))}
+                                
+                                {/* OFFICE / YOU INDICATOR */}
+                                <div className="absolute -bottom-10 left-[48%] -translate-x-1/2 flex items-center justify-center w-12 h-6 bg-red-600 border-[3px] border-white text-[14px] font-sans font-bold shadow-[0_0_15px_red] z-[100]">YOU</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* MONITOR TOGGLE BAR */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[500px] h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border-[3px] border-white/50 cursor-pointer flex flex-col items-center justify-center transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+                        onClick={() => setIsMonitorUp(!isMonitorUp)}>
+                        <div className={`text-white/80 font-sans font-bold transition-all group-hover:text-white ${!isMonitorUp ? 'text-2xl animate-pulse tracking-widest' : 'text-3xl -mt-2'}`}>
+                            {!isMonitorUp ? 'CLICK BAR TO START' : '▼ ▼'}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>        /* TITLE TWITCH EFFECT */
+        @keyframes fnaf-twitch {
+            0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.2); }
+            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.8); }
+            95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.5); }
+            100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+        }
+
+        .title-twitch {
+            animation: fnaf-twitch 3s infinite;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- CHUNKY STATIC GENERATOR ---
+        const generateNoiseFrames = (width, height, count) => {
+            const frames = [];
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d', { alpha: false });
+            for (let f = 0; f < count; f++) {
+                const imgData = ctx.createImageData(width, height);
+                const buf = new Uint32Array(imgData.data.buffer);
+                for (let i = 0; i < buf.length; i++) {
+                    const r = Math.random();
+                    const shade = r > 0.6 ? 255 : r > 0.3 ? 120 : 10;
+                    buf[i] = (255 << 24) | (shade << 16) | (shade << 8) | shade;
+                }
+                ctx.putImageData(imgData, 0, 0);
+                frames.push(canvas.toDataURL('image/jpeg', 0.5));
+            }
+            return frames;
+        };
+
+        const noiseFrames = generateNoiseFrames(250, 200, 4);
+        const style = document.head.appendChild(document.createElement('style'));
+        style.innerHTML = `
+            @keyframes fnafStaticLoop {
+                0% { background-image: url(${noiseFrames[0]}); }
+                25% { background-image: url(${noiseFrames[1]}); }
+                50% { background-image: url(${noiseFrames[2]}); }
+                75% { background-image: url(${noiseFrames[3]}); }
+                100% { background-image: url(${noiseFrames[0]}); }
+            }
+            .fnaf-static-layer {
+                animation: fnafStaticLoop 0.15s steps(1) infinite;
+                background-size: 100% 100%;
+                image-rendering: pixelated; 
+            }
+        `;
+
+        const { useState, useEffect, useRef, useMemo } = React;
+
         const cameraData = [
             { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
             { id: 'CAM 1B', name: 'Dining Area', top: '18%', left: '38%' },

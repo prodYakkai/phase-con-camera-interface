@@ -7,8 +7,8 @@
     <title>Phase Con Security Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -30,50 +30,18 @@
         }
 
         @keyframes scan {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: 0 100%;
-            }
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
         }
 
         @keyframes fnaf-twitch {
-            0% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            92% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            93% {
-                transform: translate(2px, -1px) scale(1.01);
-                filter: brightness(1.2);
-            }
-
-            94% {
-                transform: translate(-3px, 2px) scale(1);
-                filter: brightness(0.8);
-            }
-
-            95% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            98% {
-                transform: translate(5px, 0px) scale(1.02);
-                filter: brightness(1.5);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
+            0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.2); }
+            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.8); }
+            95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.5); }
+            100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
         }
 
         .title-twitch {
@@ -179,10 +147,20 @@
                 }
             };
 
+            // All 11 cameras properly mapped. 
+            // Replace YOURDOMAIN with your actual Cloudflare domain.
             const streamUrls = {
                 'CAM 1A': 'https://cams.blackcompany.tv/hls/cam1a.m3u8',
                 'CAM 1B': 'https://cams.blackcompany.tv/hls/cam1b.m3u8',
                 'CAM 1C': 'https://cams.blackcompany.tv/hls/cam1c.m3u8',
+                'CAM 5': 'https://cams.blackcompany.tv/hls/cam5.m3u8',
+                'CAM 7': 'https://cams.blackcompany.tv/hls/cam7.m3u8',
+                'CAM 3': 'https://cams.blackcompany.tv/hls/cam3.m3u8',
+                'CAM 2A': 'https://cams.blackcompany.tv/hls/cam2a.m3u8',
+                'CAM 2B': 'https://cams.blackcompany.tv/hls/cam2b.m3u8',
+                'CAM 4A': 'https://cams.blackcompany.tv/hls/cam4a.m3u8',
+                'CAM 4B': 'https://cams.blackcompany.tv/hls/cam4b.m3u8',
+                'CAM 6': 'https://cams.blackcompany.tv/hls/cam6.m3u8'
             };
 
             useEffect(() => {
@@ -274,9 +252,9 @@
                                     </button>
                                     {isCreditsOpen && (
                                         <div className="mt-2 p-3 border-t-2 border-white/20 text-lg tracking-widest leading-tight">
-                                            <p className="text-green-400">BUILT BY: prodYakkai</p>
-                                            <p>VIBECODED WITH LOVE</p>
-                                            <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON'S FIVE NIGHTS AT FREDDY'S</p>
+                                            <p className="text-green-400">PROJECT LEAD: jioriku</p>
+                                            <p>SYSTEMS ARCHITECT: GEMINI</p>
+                                            <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON</p>
                                         </div>
                                     )}
                                 </div>
@@ -314,7 +292,7 @@
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[500px] h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border-[3px] border-white/50 cursor-pointer flex flex-col items-center justify-center transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
                         onClick={() => setIsMonitorUp(!isMonitorUp)}>
                         <div className={`text-white/80 font-sans font-bold transition-all group-hover:text-white ${!isMonitorUp ? 'text-2xl animate-pulse tracking-widest' : 'text-3xl -mt-2'}`}>
-                            {!isMonitorUp ? 'CLICK BAR TO START' : '▼ ▼'}
+                            {!isMonitorUp ? 'CLICK TO START' : '▼ ▼'}
                         </div>
                     </div>
                 </div>

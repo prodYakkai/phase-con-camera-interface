@@ -94,20 +94,19 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
-        // --- MAP COORDINATES ---
-        // Manually tuned to ensure NO overlap
+        // --- AUTHENTIC MAP COORDINATES ---
         const cameraData = [
-            { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
-            { id: 'CAM 1B', name: 'Dining Area', top: '28%', left: '42%' },
-            { id: 'CAM 5', name: 'Backstage', top: '12%', left: '10%' },
-            { id: 'CAM 1C', name: 'Pirate Cove', top: '48%', left: '15%' },
-            { id: 'CAM 7', name: 'Restrooms', top: '12%', left: '78%' },
-            { id: 'CAM 6', name: 'Kitchen', top: '55%', left: '80%' },
-            { id: 'CAM 3', name: 'Supply Closet', top: '70%', left: '10%' },
-            { id: 'CAM 2A', name: 'West Hallway', top: '72%', left: '28%' },
-            { id: 'CAM 2B', name: 'W. Hall Corner', top: '92%', left: '28%' },
-            { id: 'CAM 4A', name: 'East Hallway', top: '72%', left: '58%' },
-            { id: 'CAM 4B', name: 'E. Hall Corner', top: '92%', left: '58%' }
+            { id: 'CAM 1A', name: 'Show Stage', top: '5%', left: '42%' },
+            { id: 'CAM 1B', name: 'Dining Area', top: '22%', left: '35%' },
+            { id: 'CAM 5', name: 'Backstage', top: '15%', left: '8%' },
+            { id: 'CAM 1C', name: 'Pirate Cove', top: '42%', left: '18%' },
+            { id: 'CAM 7', name: 'Restrooms', top: '15%', left: '78%' },
+            { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' },
+            { id: 'CAM 3', top: '70%', left: '10%' },
+            { id: 'CAM 2A', top: '75%', left: '32%' },
+            { id: 'CAM 2B', top: '88%', left: '32%' },
+            { id: 'CAM 4A', top: '75%', left: '55%' },
+            { id: 'CAM 4B', top: '88%', left: '55%' }
         ];
 
         const App = () => {
@@ -151,7 +150,6 @@
                 }
             };
 
-            // Using your provided ngrok link
             const streamUrls = {
                 'CAM 1A': 'https://2f53-2605-f500-4-4066-304d-1490-4a51-91cd.ngrok-free.app/hls/cam1a.m3u8',
                 'CAM 1B': 'https://2f53-2605-f500-4-4066-304d-1490-4a51-91cd.ngrok-free.app/hls/cam1b.m3u8',
@@ -271,25 +269,49 @@
                         {/* MAP & CONTROLS */}
                         <div className="absolute bottom-24 right-10 z-[70] w-[450px] flex flex-col items-end">
                             <div className="text-right text-white mb-2 pr-2 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
-                                <div className="text-3xl font-bold tracking-widest opacity-80">{activeCamObj.name.toUpperCase()}</div>
+                                <div className="text-3xl font-bold tracking-widest opacity-80">{(activeCamObj.name || activeCamObj.id).toUpperCase()}</div>
                                 <div className="text-2xl opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
                             </div>
                             
                             <div className="relative w-[400px] h-[400px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mb-8">
                                 
-                                {/* SVG MAP LINES: Pixel perfect rooms */}
+                                {/* SVG MAP LINES: FNAF 1 Logic */}
                                 <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" viewBox="0 0 400 400">
                                     <path 
                                         d="
-                                            M160,10 H240 V50 H160 Z
-                                            M100,60 H300 V220 H100 Z
-                                            M10,40 H90 V120 H10 Z
-                                            M310,60 H390 V140 H310 Z
-                                            M110,230 V350 H160 V230 Z
-                                            M240,230 V350 H290 V230 Z
-                                            M310,220 V320 H390 V220 Z
-                                            M10,180 H80 V240 H10 Z
-                                            M10,270 H80 V330 H10 Z
+                                            {/* Show Stage Area */}
+                                            M160,10 H240 V65 H160 Z
+                                            
+                                            {/* Dining Area Connector */}
+                                            M200,65 V85
+                                            
+                                            {/* Dining Area Box */}
+                                            M110,85 H300 V210 H110 Z
+                                            
+                                            {/* Backstage Room & Connector */}
+                                            M110,120 H90
+                                            M10,80 H90 V180 H10 Z
+                                            
+                                            {/* Restrooms & Connector */}
+                                            M300,120 H320
+                                            M320,80 H390 V180 H320 Z
+                                            
+                                            {/* Pirate Cove Connector */}
+                                            M110,180 H95 V220 H110
+                                            
+                                            {/* Kitchen Box */}
+                                            M315,220 H390 V280 H315 Z
+                                            
+                                            {/* Supply Closet Box */}
+                                            M15,270 H85 V330 H15 Z
+                                            M85,300 H120
+                                            
+                                            {/* Hallways */}
+                                            M120,210 V350 H170 V210 Z
+                                            M240,210 V350 H290 V210 Z
+                                            
+                                            {/* YOU Connector */}
+                                            M170,330 H240
                                         " 
                                         fill="none" 
                                         stroke="white" 
@@ -304,12 +326,15 @@
                                     </button>
                                 ))}
                                 
-                                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-6 bg-red-600 border-[3px] border-white text-[14px] font-sans font-bold shadow-[0_0_15px_red] z-[100]">YOU</div>
+                                <div className="absolute bottom-[2%] left-1/2 -translate-x-1/2 flex items-center justify-center w-12 h-10 bg-black border-2 border-white text-[14px] font-sans font-bold z-[100]">
+                                    YOU
+                                    <div className="absolute bottom-1 w-2 h-2 bg-white"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* MONITOR TOGGLE BAR */}
+                    {/* TOGGLE BAR */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[500px] h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border-[3px] border-white/50 cursor-pointer flex flex-col items-center justify-center transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
                         onClick={() => setIsMonitorUp(!isMonitorUp)}>
                         <div className={`text-white/80 font-sans font-bold transition-all group-hover:text-white ${!isMonitorUp ? 'text-2xl animate-pulse tracking-widest' : 'text-3xl -mt-2'}`}>

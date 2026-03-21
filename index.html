@@ -30,51 +30,19 @@
         }
 
         @keyframes scan {
-            0% {
-                background-position: 0 0;
-            }
-
-            100% {
-                background-position: 0 100%;
-            }
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
         }
 
-        /* FNAF TITLE TWITCH EFFECT */
+        /* TITLE TWITCH EFFECT */
         @keyframes fnaf-twitch {
-            0% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            92% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            93% {
-                transform: translate(2px, -1px) scale(1.01);
-                filter: brightness(1.2);
-            }
-
-            94% {
-                transform: translate(-3px, 2px) scale(1);
-                filter: brightness(0.8);
-            }
-
-            95% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
-
-            98% {
-                transform: translate(5px, 0px) scale(1.02);
-                filter: brightness(1.5);
-            }
-
-            100% {
-                transform: translate(0, 0) scale(1);
-                filter: brightness(1);
-            }
+            0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.2); }
+            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.8); }
+            95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.5); }
+            100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
         }
 
         .title-twitch {
@@ -223,35 +191,27 @@
             return (
                 <div className="relative w-screen h-screen bg-black overflow-hidden select-none cursor-crosshair">
 
-                    {/* GLOBAL SCANLINES (Always on top) */}
+                    {/* GLOBAL SCANLINES */}
                     <div className="scanlines absolute inset-0 pointer-events-none z-[100] opacity-40"></div>
 
-                    {/* TITLE SCREEN (Shown when monitor is DOWN) */}
+                    {/* TITLE SCREEN */}
                     {!isMonitorUp && (
                         <div className="absolute inset-0 flex items-center justify-center z-10">
                             <img
                                 src="title.png"
                                 className="w-full h-full object-cover title-twitch grayscale contrast-125"
-                                alt="FNAF Title Screen"
+                                alt="Title Screen"
                                 onError={(e) => { e.target.src = "https://via.placeholder.com/1920x1080/000000/FFFFFF?text=TITLE.PNG+NOT+FOUND"; }}
                             />
-                            {/* Title Static Overlay */}
                             <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
 
                             <div className="absolute top-20 left-20">
-                                <h1 className="text-8xl tracking-widest drop-shadow-[4px_4px_0_rgba(0,0,0,1)]">PHASE CON</h1>
-                                <p className="text-4xl opacity-60">SECURITY SYSTEM</p>
-                            </div>
-
-                            {/* --- START INSTRUCTION --- */}
-                            <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce opacity-70">
-                                <p className="text-3xl tracking-[0.2em] drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">CLICK THE BAR TO GET STARTED</p>
-                                <div className="text-4xl mt-2">▼</div>
+                                <p className="text-4xl opacity-60 tracking-[0.3em]">SECURITY SYSTEM</p>
                             </div>
                         </div>
                     )}
 
-                    {/* MONITOR UI (Shown when monitor is UP) */}
+                    {/* MONITOR INTERFACE */}
                     <div className={`absolute inset-0 w-full h-full transition-transform duration-[600ms] ease-in-out z-20 ${isMonitorUp ? 'translate-y-0' : 'translate-y-[120%]'}`}>
                         <div className="absolute inset-0 z-[60] shadow-[inset_0_0_150px_rgba(0,0,0,0.9)] pointer-events-none"></div>
                         <div className="absolute inset-0 z-40 fnaf-static-layer opacity-[0.12] pointer-events-none mix-blend-screen"></div>
@@ -329,10 +289,12 @@
                         </div>
                     </div>
 
-                    {/* MONITOR TOGGLE BAR */}
+                    {/* TOGGLE BAR */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[500px] h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border-[3px] border-white/50 cursor-pointer flex flex-col items-center justify-center transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
                         onClick={() => setIsMonitorUp(!isMonitorUp)}>
-                        <div className="text-white/80 text-3xl font-sans font-bold -mt-2 group-hover:text-white transition-colors">{isMonitorUp ? '▼ ▼' : '▲ ▲'}</div>
+                        <div className={`text-white/80 font-sans font-bold transition-all group-hover:text-white ${!isMonitorUp ? 'text-2xl animate-pulse tracking-widest' : 'text-3xl -mt-2'}`}>
+                            {!isMonitorUp ? 'CLICK BAR TO START' : '▼ ▼'}
+                        </div>
                     </div>
                 </div>
             );

@@ -7,8 +7,8 @@
     <title>Phase Con Security Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@19/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@19/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -30,18 +30,50 @@
         }
 
         @keyframes scan {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100%; }
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100%;
+            }
         }
 
         @keyframes fnaf-twitch {
-            0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.2); }
-            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.8); }
-            95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.5); }
-            100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            0% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            92% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            93% {
+                transform: translate(2px, -1px) scale(1.01);
+                filter: brightness(1.2);
+            }
+
+            94% {
+                transform: translate(-3px, 2px) scale(1);
+                filter: brightness(0.8);
+            }
+
+            95% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            98% {
+                transform: translate(5px, 0px) scale(1.02);
+                filter: brightness(1.5);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
         }
 
         .title-twitch {

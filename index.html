@@ -34,7 +34,7 @@
             100% { background-position: 0 100%; }
         }
 
-        /* FNAF TITLE TWITCH EFFECT */
+        /* TITLE TWITCH EFFECT */
         @keyframes fnaf-twitch {
             0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
             92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
@@ -94,6 +94,7 @@
 
         const { useState, useEffect, useRef, useMemo } = React;
 
+        // Adjusted Hallway percentages slightly to make room for the YOU box in the center
         const cameraData = [
             { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
             { id: 'CAM 1B', name: 'Dining Area', top: '18%', left: '38%' },
@@ -101,10 +102,10 @@
             { id: 'CAM 5', name: 'Backstage', top: '32%', left: '2%' },
             { id: 'CAM 7', name: 'Restrooms', top: '18%', left: '78%' },
             { id: 'CAM 3', name: 'Supply Closet', top: '55%', left: '15%' },
-            { id: 'CAM 2A', name: 'West Hall', top: '65%', left: '30%' },
-            { id: 'CAM 2B', name: 'W. Hall Corner', top: '85%', left: '30%' },
-            { id: 'CAM 4A', name: 'East Hall', top: '65%', left: '55%' },
-            { id: 'CAM 4B', name: 'E. Hall Corner', top: '85%', left: '55%' },
+            { id: 'CAM 2A', name: 'West Hall', top: '65%', left: '25%' },
+            { id: 'CAM 2B', name: 'W. Hall Corner', top: '85%', left: '25%' },
+            { id: 'CAM 4A', name: 'East Hall', top: '65%', left: '60%' },
+            { id: 'CAM 4B', name: 'E. Hall Corner', top: '85%', left: '60%' },
             { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' }
         ];
 
@@ -274,21 +275,20 @@
                                     <div className="absolute border-2 border-white w-[15%] h-[15%] top-[50%] left-[10%]"></div>
                                     <div className="absolute border-2 border-white w-[25%] h-[30%] top-[55%] left-[75%]"></div>
                                 </div>
-                                
-                                {/* YOU BOX: Sized to match CAM buttons (74x38px), layered behind buttons (z-0) */}
-                                <div 
-                                    className="absolute text-xl font-bold border-2 bg-zinc-900 border-zinc-400 text-white z-0 opacity-80 cursor-default flex items-center justify-center" 
-                                    style={{ top: '88%', left: '42.5%', transform: 'translateX(-50%)', width: '74px', height: '38px' }}
-                                >
-                                    YOU
-                                </div>
-
                                 {cameraData.map((cam) => (
                                     <button key={cam.id} onClick={() => handleCameraChange(cam)} style={{ top: cam.top, left: cam.left }}
                                         className={`absolute px-2 py-1 text-xl font-bold border-2 transition-all ${activeCamera === cam.id ? 'bg-green-500 border-green-300 text-black z-20 shadow-[0_0_15px_rgba(34,197,94,0.8)] scale-110' : 'bg-zinc-900 border-zinc-400 text-white z-10 hover:bg-zinc-600 opacity-80'}`}>
                                         {cam.id}
                                     </button>
                                 ))}
+                                
+                                {/* YOU BOX: Centered perfectly between CAM 2B and CAM 4B */}
+                                <div 
+                                    className="absolute flex items-center justify-center w-12 h-6 bg-red-600 border-[3px] border-white text-[14px] font-sans font-bold shadow-[0_0_15px_red] z-[100]" 
+                                    style={{ top: '86%', left: '47%', transform: 'translateX(-50%)' }}
+                                >
+                                    YOU
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Five Nights At Phase Con</title>
+    <title>Phase Con Security Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -54,7 +54,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- CHUNKY STATIC GENERATOR (Reverted to soft gray noise) ---
         const generateNoiseFrames = (width, height, count) => {
             const frames = [];
             const canvas = document.createElement('canvas');
@@ -94,17 +93,17 @@
         const { useState, useEffect, useRef, useMemo } = React;
 
         const cameraData = [
-            { id: 'CAM 1A', name: 'GRAND PENINSULA BALLROOM A', top: '2%', left: '42%' },
-            { id: 'CAM 1B', name: 'GRAND PENINSULA BALLROOM B', top: '18%', left: '38%' },
-            { id: 'CAM 1C', name: 'GRAND PENINSULA BALLROOM C', top: '15%', left: '15%' },
-            { id: 'CAM 5', name: 'SANDPEBBLE A', top: '32%', left: '2%' },
-            { id: 'CAM 7', name: 'REGENCY BALLROOM C', top: '18%', left: '78%' },
-            { id: 'CAM 3', name: 'SANDPEBBLE B', top: '55%', left: '15%' },
-            { id: 'CAM 2A', name: 'SANDPEBBLE C', top: '65%', left: '25%' },
-            { id: 'CAM 2B', name: 'SANDPEBBLE D', top: '85%', left: '25%' },
-            { id: 'CAM 4A', name: 'HARBOUR ROOM B', top: '65%', left: '60%' },
-            { id: 'CAM 4B', name: 'REGENCY BALLROOM A', top: '85%', left: '60%' },
-            { id: 'CAM 6', name: 'REGENCY BALLROOM B', top: '65%', left: '78%' }
+            { id: 'CAM 1A', name: 'Show Stage', top: '2%', left: '42%' },
+            { id: 'CAM 1B', name: 'Dining Area', top: '18%', left: '38%' },
+            { id: 'CAM 1C', name: 'Pirate Cove', top: '15%', left: '15%' },
+            { id: 'CAM 5', name: 'Backstage', top: '32%', left: '2%' },
+            { id: 'CAM 7', name: 'Restrooms', top: '18%', left: '78%' },
+            { id: 'CAM 3', name: 'Supply Closet', top: '55%', left: '15%' },
+            { id: 'CAM 2A', name: 'West Hall', top: '65%', left: '25%' },
+            { id: 'CAM 2B', name: 'W. Hall Corner', top: '85%', left: '25%' },
+            { id: 'CAM 4A', name: 'East Hall', top: '65%', left: '60%' },
+            { id: 'CAM 4B', name: 'E. Hall Corner', top: '85%', left: '60%' },
+            { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' }
         ];
 
         const TITLE_FRAMES = [
@@ -165,18 +164,19 @@
                 }
             };
 
+            // UPDATE THESE to match your Cloudflare domain
             const streamUrls = {
-                'CAM 1A': 'https://cams.blackcompany.tv/hls/cam1a.m3u8',
-                'CAM 1B': 'https://cams.blackcompany.tv/hls/cam1b.m3u8',
-                'CAM 1C': 'https://cams.blackcompany.tv/hls/cam1c.m3u8',
-                'CAM 5':  'https://cams.blackcompany.tv/hls/cam5.m3u8',
-                'CAM 7':  'https://cams.blackcompany.tv/hls/cam7.m3u8',
-                'CAM 3':  'https://cams.blackcompany.tv/hls/cam3.m3u8',
-                'CAM 2A': 'https://cams.blackcompany.tv/hls/cam2a.m3u8',
-                'CAM 2B': 'https://cams.blackcompany.tv/hls/cam2b.m3u8',
-                'CAM 4A': 'https://cams.blackcompany.tv/hls/cam4a.m3u8',
-                'CAM 4B': 'https://cams.blackcompany.tv/hls/cam4b.m3u8',
-                'CAM 6':  'https://cams.blackcompany.tv/hls/cam6.m3u8'
+                'CAM 1A': 'https://cams.blackcompany.tv/cam1a/index.m3u8',
+                'CAM 1B': 'https://cams.blackcompany.tv/cam1b/index.m3u8',
+                'CAM 1C': 'https://cams.blackcompany.tv/cam1c/index.m3u8',
+                'CAM 5':  'https://cams.blackcompany.tv/cam5/index.m3u8',
+                'CAM 7':  'https://cams.blackcompany.tv/cam7/index.m3u8',
+                'CAM 3':  'https://cams.blackcompany.tv/cam3/index.m3u8',
+                'CAM 2A': 'https://cams.blackcompany.tv/cam2a/index.m3u8',
+                'CAM 2B': 'https://cams.blackcompany.tv/cam2b/index.m3u8',
+                'CAM 4A': 'https://cams.blackcompany.tv/cam4a/index.m3u8',
+                'CAM 4B': 'https://cams.blackcompany.tv/cam4b/index.m3u8',
+                'CAM 6':  'https://cams.blackcompany.tv/cam6/index.m3u8'
             };
 
             useEffect(() => {
@@ -210,19 +210,64 @@
                 return () => toggleStaticAudio(false);
             }, [isMonitorUp, isStaticMuted]);
 
+            // --- REWRITTEN VIDEO PLAYER LOGIC ---
             useEffect(() => {
                 if (!isMonitorUp) return;
                 const video = videoRef.current;
                 const url = streamUrls[activeCamera];
                 let hls;
+
                 if (!video || !url) return;
+
+                // Reset error state when attempting to load new camera
+                setHasVideoError(false);
+
                 if (Hls.isSupported()) {
-                    hls = new Hls(); hls.loadSource(url); hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => { }));
-                    hls.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) setHasVideoError(true); });
+                    // Configure HLS to be patient and retry on network drops
+                    hls = new Hls({
+                        manifestLoadingMaxRetry: 10,
+                        manifestLoadingRetryDelay: 1000,
+                        levelLoadingMaxRetry: 10,
+                    });
+                    
+                    hls.loadSource(url); 
+                    hls.attachMedia(video);
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play().catch(() => { });
+                    });
+                    
+                    hls.on(Hls.Events.ERROR, (event, data) => { 
+                        if (data.fatal) { 
+                            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                                // If MediaMTX is just being slow, force a retry instead of giving up
+                                console.log("Waiting for MediaMTX to wake up...");
+                                hls.startLoad();
+                            } else {
+                                setHasVideoError(true); 
+                            }
+                        } 
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    // Fallback for Safari (Native HLS)
+                    video.src = url;
+                    video.addEventListener('loadedmetadata', () => {
+                        video.play().catch(() => {});
+                    });
+                    video.addEventListener('error', () => {
+                        setHasVideoError(true);
+                    });
                 }
-                return () => { if (hls) hls.destroy(); };
+                
+                return () => { 
+                    if (hls) hls.destroy(); 
+                    if (video) {
+                        video.removeAttribute('src');
+                        video.load();
+                    }
+                };
             }, [activeCamera, isMonitorUp]);
+            // -------------------------------------
 
             const handleCameraChange = (camObj) => {
                 if (camObj.id === activeCamera) return;
@@ -248,7 +293,6 @@
                                 }}
                             />
                             
-                            {/* Reverted static overlay for the title screen */}
                             <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
                             
                             <div className="absolute top-20 left-20 z-40">
@@ -294,9 +338,9 @@
                                     </button>
                                     {isCreditsOpen && (
                                         <div className="mt-2 p-3 border-t-2 border-white/20 text-lg tracking-widest leading-tight">
-                                            <p className="text-green-400 font-bold">PROJECT BY: prodYakkai</p>
-                                            <p className="font-bold">VIBECODED WITH LOVE</p>
-                                            <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON'S FIVE NIGHTS AT FREDDY'S</p>
+                                            <p className="text-green-400 font-bold">PROJECT LEAD: jioriku</p>
+                                            <p className="font-bold">SYSTEMS ARCHITECT: GEMINI</p>
+                                            <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON</p>
                                         </div>
                                     )}
                                 </div>

@@ -34,13 +34,14 @@
             100% { background-position: 0 100%; }
         }
 
+        /* Subtle CSS shake to compliment the frame swapping */
         @keyframes fnaf-twitch {
             0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
             92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.2); }
-            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.8); }
+            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.1); }
+            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.9); }
             95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.5); }
+            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.2); }
             100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
         }
 
@@ -54,6 +55,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // --- CHUNKY STATIC GENERATOR ---
         const generateNoiseFrames = (width, height, count) => {
             const frames = [];
             const canvas = document.createElement('canvas');
@@ -106,6 +108,14 @@
             { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' }
         ];
 
+        // Ensure these match the files in your folder!
+        const TITLE_FRAMES = [
+            'title_0.png', // Main frame
+            'title_1.png', // Twitch 1
+            'title_2.png', // Twitch 2
+            'title_3.png'  // Rare/Creepy frame
+        ];
+
         const App = () => {
             const [isMonitorUp, setIsMonitorUp] = useState(false);
             const [activeCamObj, setActiveCamObj] = useState(cameraData[0]);
@@ -117,6 +127,9 @@
             const [isCreditsOpen, setIsCreditsOpen] = useState(false);
             const [isStaticMuted, setIsStaticMuted] = useState(false);
             const [isBlipMuted, setIsBlipMuted] = useState(false);
+            
+            // New state for title screen twitching
+            const [currentTitleFrameIndex, setCurrentTitleFrameIndex] = useState(0);
 
             const videoRef = useRef(null);
             const activeCamera = activeCamObj.id;
@@ -147,21 +160,45 @@
                 }
             };
 
-            // All 11 cameras properly mapped. 
-            // Replace YOURDOMAIN with your actual Cloudflare domain.
             const streamUrls = {
                 'CAM 1A': 'https://cams.blackcompany.tv/hls/cam1a.m3u8',
                 'CAM 1B': 'https://cams.blackcompany.tv/hls/cam1b.m3u8',
                 'CAM 1C': 'https://cams.blackcompany.tv/hls/cam1c.m3u8',
-                'CAM 5': 'https://cams.blackcompany.tv/hls/cam5.m3u8',
-                'CAM 7': 'https://cams.blackcompany.tv/hls/cam7.m3u8',
-                'CAM 3': 'https://cams.blackcompany.tv/hls/cam3.m3u8',
+                'CAM 5':  'https://cams.blackcompany.tv/hls/cam5.m3u8',
+                'CAM 7':  'https://cams.blackcompany.tv/hls/cam7.m3u8',
+                'CAM 3':  'https://cams.blackcompany.tv/hls/cam3.m3u8',
                 'CAM 2A': 'https://cams.blackcompany.tv/hls/cam2a.m3u8',
                 'CAM 2B': 'https://cams.blackcompany.tv/hls/cam2b.m3u8',
                 'CAM 4A': 'https://cams.blackcompany.tv/hls/cam4a.m3u8',
                 'CAM 4B': 'https://cams.blackcompany.tv/hls/cam4b.m3u8',
-                'CAM 6': 'https://cams.blackcompany.tv/hls/cam6.m3u8'
+                'CAM 6':  'https://cams.blackcompany.tv/hls/cam6.m3u8'
             };
+
+            // Preload images and handle the random twitch logic
+            useEffect(() => {
+                // Preload to prevent white flashes
+                TITLE_FRAMES.forEach(src => {
+                    const img = new Image();
+                    img.src = src;
+                });
+
+                if (isMonitorUp) return; // Stop calculating if dashboard is open
+
+                const twitchInterval = setInterval(() => {
+                    const randomChance = Math.random();
+                    
+                    // 90% of the time, show the normal frame
+                    if (randomChance > 0.10) {
+                        setCurrentTitleFrameIndex(0);
+                    } else {
+                        // 10% chance to pick a random glitch frame (indices 1, 2, or 3)
+                        const randomGlitch = Math.floor(Math.random() * (TITLE_FRAMES.length - 1)) + 1;
+                        setCurrentTitleFrameIndex(randomGlitch);
+                    }
+                }, 80); // Runs every 80ms for that rapid strobe effect
+
+                return () => clearInterval(twitchInterval);
+            }, [isMonitorUp]);
 
             useEffect(() => {
                 const interval = setInterval(() => setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 1000);
@@ -202,15 +239,21 @@
 
                     {!isMonitorUp && (
                         <div className="absolute inset-0 flex items-center justify-center z-10">
+                            {/* Dynamic Title Image */}
                             <img
-                                src="title.png"
-                                className="w-full h-full object-cover title-twitch grayscale contrast-125"
+                                src={TITLE_FRAMES[currentTitleFrameIndex]}
+                                className="w-full h-full object-cover title-twitch grayscale contrast-125 transition-opacity duration-75"
                                 alt="Title Screen"
-                                onError={(e) => { e.target.src = "https://via.placeholder.com/1920x1080/000000/FFFFFF?text=TITLE.PNG+NOT+FOUND"; }}
+                                onError={(e) => { 
+                                    if (e.target.src !== "title.png") {
+                                        // Fallback to title.png if the sequence images aren't found
+                                        e.target.src = "title.png"; 
+                                    }
+                                }}
                             />
                             <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
                             <div className="absolute top-20 left-20">
-                                <p className="text-4xl opacity-60 tracking-[0.3em]">SECURITY SYSTEM</p>
+                                <p className="text-4xl opacity-60 tracking-[0.3em] font-bold">SECURITY SYSTEM</p>
                             </div>
                         </div>
                     )}
@@ -228,7 +271,7 @@
                         <div className="absolute top-8 left-10 z-[80] flex flex-col items-start gap-4">
                             <div className="flex items-center gap-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                 <div className="w-5 h-5 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
-                                <span className="text-white text-5xl tracking-widest">REC</span>
+                                <span className="text-white text-5xl tracking-widest font-bold">REC</span>
                             </div>
 
                             <button onClick={() => { setIsMenuOpen(!isMenuOpen); setIsCreditsOpen(false); }}
@@ -239,21 +282,21 @@
                             {isMenuOpen && (
                                 <div className="flex flex-col gap-2 p-3 bg-black/80 border-2 border-white/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.8)]">
                                     <button onClick={() => setIsStaticMuted(!isStaticMuted)}
-                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isStaticMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors font-bold ${isStaticMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
                                         STATIC: {isStaticMuted ? 'MUTED' : 'ON'}
                                     </button>
                                     <button onClick={() => setIsBlipMuted(!isBlipMuted)}
-                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isBlipMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors font-bold ${isBlipMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
                                         BLIPS: {isBlipMuted ? 'MUTED' : 'ON'}
                                     </button>
                                     <button onClick={() => setIsCreditsOpen(!isCreditsOpen)}
-                                        className="px-4 py-2 border-2 border-white/50 bg-zinc-800 text-xl tracking-widest hover:bg-zinc-700">
+                                        className="px-4 py-2 border-2 border-white/50 bg-zinc-800 text-xl tracking-widest hover:bg-zinc-700 font-bold">
                                         CREDITS
                                     </button>
                                     {isCreditsOpen && (
                                         <div className="mt-2 p-3 border-t-2 border-white/20 text-lg tracking-widest leading-tight">
-                                            <p className="text-green-400">PROJECT LEAD: jioriku</p>
-                                            <p>SYSTEMS ARCHITECT: GEMINI</p>
+                                            <p className="text-green-400 font-bold">PROJECT LEAD: jioriku</p>
+                                            <p className="font-bold">SYSTEMS ARCHITECT: GEMINI</p>
                                             <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON</p>
                                         </div>
                                     )}
@@ -261,14 +304,14 @@
                             )}
                         </div>
 
-                        <div className="absolute top-8 right-10 z-[70] text-right text-5xl tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
+                        <div className="absolute top-8 right-10 z-[70] text-right text-5xl tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold">
                             {time}
                         </div>
 
                         <div className="absolute bottom-24 right-10 z-[70] w-[400px] flex flex-col items-end">
                             <div className="text-right text-white mb-2 pr-2 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                 <div className="text-3xl font-bold tracking-widest opacity-80">{activeCamObj.name.toUpperCase()}</div>
-                                <div className="text-2xl opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
+                                <div className="text-2xl font-bold opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
                             </div>
                             <div className="relative w-[350px] h-[350px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mb-8">
                                 <div className="absolute inset-0 pointer-events-none opacity-40">
@@ -292,7 +335,7 @@
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[110] w-[500px] h-14 bg-white/20 hover:bg-white/30 backdrop-blur-md border-[3px] border-white/50 cursor-pointer flex flex-col items-center justify-center transition-all group shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
                         onClick={() => setIsMonitorUp(!isMonitorUp)}>
                         <div className={`text-white/80 font-sans font-bold transition-all group-hover:text-white ${!isMonitorUp ? 'text-2xl animate-pulse tracking-widest' : 'text-3xl -mt-2'}`}>
-                            {!isMonitorUp ? 'CLICK TO START' : '▼ ▼'}
+                            {!isMonitorUp ? 'CLICK BAR TO START' : '▼ ▼'}
                         </div>
                     </div>
                 </div>

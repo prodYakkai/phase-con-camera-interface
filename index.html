@@ -23,6 +23,7 @@
             overflow: hidden;
         }
 
+        /* Standard tight scanlines */
         .scanlines {
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
             background-size: 100% 4px;
@@ -34,7 +35,18 @@
             100% { background-position: 0 100%; }
         }
 
-        /* Subtle CSS shake to compliment the frame swapping */
+        /* FNAF 1 Heavy CRT Tracking Bar */
+        .crt-tracking {
+            background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 60%, transparent);
+            background-size: 100% 200%;
+            animation: tracking-roll 6s linear infinite;
+        }
+
+        @keyframes tracking-roll {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
         @keyframes fnaf-twitch {
             0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
             92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
@@ -55,7 +67,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // --- CHUNKY STATIC GENERATOR ---
+        // --- CHUNKY STATIC GENERATOR (UPDATED FOR PURE B&W) ---
         const generateNoiseFrames = (width, height, count) => {
             const frames = [];
             const canvas = document.createElement('canvas');
@@ -65,8 +77,8 @@
                 const imgData = ctx.createImageData(width, height);
                 const buf = new Uint32Array(imgData.data.buffer);
                 for (let i = 0; i < buf.length; i++) {
-                    const r = Math.random();
-                    const shade = r > 0.6 ? 255 : r > 0.3 ? 120 : 10;
+                    // Pure Black and White for harsh FNAF 1 style static
+                    const shade = Math.random() > 0.5 ? 255 : 0;
                     buf[i] = (255 << 24) | (shade << 16) | (shade << 8) | shade;
                 }
                 ctx.putImageData(imgData, 0, 0);
@@ -86,7 +98,8 @@
                 100% { background-image: url(${noiseFrames[0]}); }
             }
             .fnaf-static-layer {
-                animation: fnafStaticLoop 0.15s steps(1) infinite;
+                /* Sped up from 0.15s to 0.05s for hyper-aggressive strobing */
+                animation: fnafStaticLoop 0.05s steps(1) infinite;
                 background-size: 100% 100%;
                 image-rendering: pixelated; 
             }
@@ -108,12 +121,11 @@
             { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' }
         ];
 
-        // Ensure these match the files in your folder!
         const TITLE_FRAMES = [
-            'title_0.png', // Main frame
-            'title_1.png', // Twitch 1
-            'title_2.png', // Twitch 2
-            'title_3.png'  // Rare/Creepy frame
+            'title_0.png', 
+            'title_1.png', 
+            'title_2.png', 
+            'title_3.png'  
         ];
 
         const App = () => {
@@ -128,7 +140,6 @@
             const [isStaticMuted, setIsStaticMuted] = useState(false);
             const [isBlipMuted, setIsBlipMuted] = useState(false);
             
-            // New state for title screen twitching
             const [currentTitleFrameIndex, setCurrentTitleFrameIndex] = useState(0);
 
             const videoRef = useRef(null);
@@ -174,28 +185,23 @@
                 'CAM 6':  'https://cams.blackcompany.tv/hls/cam6.m3u8'
             };
 
-            // Preload images and handle the random twitch logic
             useEffect(() => {
-                // Preload to prevent white flashes
                 TITLE_FRAMES.forEach(src => {
                     const img = new Image();
                     img.src = src;
                 });
 
-                if (isMonitorUp) return; // Stop calculating if dashboard is open
+                if (isMonitorUp) return;
 
                 const twitchInterval = setInterval(() => {
                     const randomChance = Math.random();
-                    
-                    // 90% of the time, show the normal frame
                     if (randomChance > 0.10) {
                         setCurrentTitleFrameIndex(0);
                     } else {
-                        // 10% chance to pick a random glitch frame (indices 1, 2, or 3)
                         const randomGlitch = Math.floor(Math.random() * (TITLE_FRAMES.length - 1)) + 1;
                         setCurrentTitleFrameIndex(randomGlitch);
                     }
-                }, 80); // Runs every 80ms for that rapid strobe effect
+                }, 80); 
 
                 return () => clearInterval(twitchInterval);
             }, [isMonitorUp]);
@@ -235,25 +241,28 @@
 
             return (
                 <div className="relative w-screen h-screen bg-black overflow-hidden select-none cursor-crosshair">
-                    <div className="scanlines absolute inset-0 pointer-events-none z-[100] opacity-40"></div>
+                    {/* Underlying tight scanlines */}
+                    <div className="scanlines absolute inset-0 pointer-events-none z-[100] opacity-30"></div>
 
                     {!isMonitorUp && (
                         <div className="absolute inset-0 flex items-center justify-center z-10">
-                            {/* Dynamic Title Image */}
                             <img
                                 src={TITLE_FRAMES[currentTitleFrameIndex]}
                                 className="w-full h-full object-cover title-twitch grayscale contrast-125 transition-opacity duration-75"
                                 alt="Title Screen"
                                 onError={(e) => { 
-                                    if (e.target.src !== "title.png") {
-                                        // Fallback to title.png if the sequence images aren't found
-                                        e.target.src = "title.png"; 
-                                    }
+                                    if (e.target.src !== "title.png") { e.target.src = "title.png"; }
                                 }}
                             />
-                            <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
-                            <div className="absolute top-20 left-20">
-                                <p className="text-4xl opacity-60 tracking-[0.3em] font-bold"></p>
+                            
+                            {/* NEW: Rolling CRT Tracking Bar */}
+                            <div className="crt-tracking absolute inset-0 pointer-events-none mix-blend-screen z-20"></div>
+
+                            {/* UPDATED: Heavy, aggressive B&W static at 30% opacity */}
+                            <div className="absolute inset-0 fnaf-static-layer opacity-30 pointer-events-none mix-blend-screen z-30"></div>
+                            
+                            <div className="absolute top-20 left-20 z-40">
+                                <p className="text-4xl opacity-80 tracking-[0.3em] font-bold text-white drop-shadow-md">SECURITY SYSTEM</p>
                             </div>
                         </div>
                     )}

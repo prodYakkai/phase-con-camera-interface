@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phase Con Security Dashboard</title>
+    <title>Five Nights At Phase Con</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -54,6 +54,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // Soft static generator
         const generateNoiseFrames = (width, height, count) => {
             const frames = [];
             const canvas = document.createElement('canvas');
@@ -164,7 +165,6 @@
                 }
             };
 
-            // UPDATE THESE to match your Cloudflare domain
             const streamUrls = {
                 'CAM 1A': 'https://cams.blackcompany.tv/cam1a/index.m3u8',
                 'CAM 1B': 'https://cams.blackcompany.tv/cam1b/index.m3u8',
@@ -179,6 +179,7 @@
                 'CAM 6':  'https://cams.blackcompany.tv/cam6/index.m3u8'
             };
 
+            // 1. useEffect for Title Screen Twitching
             useEffect(() => {
                 TITLE_FRAMES.forEach(src => {
                     const img = new Image();
@@ -200,17 +201,19 @@
                 return () => clearInterval(twitchInterval);
             }, [isMonitorUp]);
 
+            // 2. useEffect for the PST Clock
             useEffect(() => {
                 const interval = setInterval(() => setTime(getPSTTime()), 1000);
                 return () => clearInterval(interval);
             }, []);
 
+            // 3. useEffect for Static Audio
             useEffect(() => {
                 toggleStaticAudio(isMonitorUp && !isStaticMuted);
                 return () => toggleStaticAudio(false);
             }, [isMonitorUp, isStaticMuted]);
 
-            // --- REWRITTEN VIDEO PLAYER LOGIC ---
+            // 4. useEffect for High-Speed Video Player (UPDATED)
             useEffect(() => {
                 if (!isMonitorUp) return;
                 const video = videoRef.current;
@@ -218,19 +221,22 @@
                 let hls;
 
                 if (!video || !url) return;
-
-                // Reset error state when attempting to load new camera
                 setHasVideoError(false);
 
+                // CACHE BUSTER: Forces Cloudflare to fetch the absolute newest frame
+                const bypassCacheUrl = `${url}?nocache=${new Date().getTime()}`;
+
                 if (Hls.isSupported()) {
-                    // Configure HLS to be patient and retry on network drops
                     hls = new Hls({
-                        manifestLoadingMaxRetry: 10,
-                        manifestLoadingRetryDelay: 1000,
-                        levelLoadingMaxRetry: 10,
+                        // ZERO PATIENCE: Tells the player to start instantly
+                        liveSyncDurationCount: 0,
+                        maxBufferLength: 2,
+                        maxMaxBufferLength: 2,
+                        lowLatencyMode: true,
+                        enableWorker: true
                     });
                     
-                    hls.loadSource(url); 
+                    hls.loadSource(bypassCacheUrl); 
                     hls.attachMedia(video);
                     
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -238,19 +244,10 @@
                     });
                     
                     hls.on(Hls.Events.ERROR, (event, data) => { 
-                        if (data.fatal) { 
-                            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                                // If MediaMTX is just being slow, force a retry instead of giving up
-                                console.log("Waiting for MediaMTX to wake up...");
-                                hls.startLoad();
-                            } else {
-                                setHasVideoError(true); 
-                            }
-                        } 
+                        if (data.fatal) setHasVideoError(true); 
                     });
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    // Fallback for Safari (Native HLS)
-                    video.src = url;
+                    video.src = bypassCacheUrl;
                     video.addEventListener('loadedmetadata', () => {
                         video.play().catch(() => {});
                     });
@@ -267,7 +264,6 @@
                     }
                 };
             }, [activeCamera, isMonitorUp]);
-            // -------------------------------------
 
             const handleCameraChange = (camObj) => {
                 if (camObj.id === activeCamera) return;

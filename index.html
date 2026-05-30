@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Five Nights At Phase Con</title>
+    <title>Phase Con Security Dashboard</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/umd-react@19.2.4/dist/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
@@ -30,18 +30,50 @@
         }
 
         @keyframes scan {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100%; }
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100%;
+            }
         }
 
         @keyframes fnaf-twitch {
-            0% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            92% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            93% { transform: translate(2px, -1px) scale(1.01); filter: brightness(1.1); }
-            94% { transform: translate(-3px, 2px) scale(1); filter: brightness(0.9); }
-            95% { transform: translate(0, 0) scale(1); filter: brightness(1); }
-            98% { transform: translate(5px, 0px) scale(1.02); filter: brightness(1.2); }
-            100% { transform: translate(0, 0) scale(1); filter: brightness(1); }
+            0% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            92% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            93% {
+                transform: translate(2px, -1px) scale(1.01);
+                filter: brightness(1.2);
+            }
+
+            94% {
+                transform: translate(-3px, 2px) scale(1);
+                filter: brightness(0.8);
+            }
+
+            95% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
+
+            98% {
+                transform: translate(5px, 0px) scale(1.02);
+                filter: brightness(1.5);
+            }
+
+            100% {
+                transform: translate(0, 0) scale(1);
+                filter: brightness(1);
+            }
         }
 
         .title-twitch {
@@ -54,7 +86,6 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Soft static generator
         const generateNoiseFrames = (width, height, count) => {
             const frames = [];
             const canvas = document.createElement('canvas');
@@ -107,34 +138,17 @@
             { id: 'CAM 6', name: 'Kitchen', top: '65%', left: '78%' }
         ];
 
-        const TITLE_FRAMES = [
-            'title_0.png', 
-            'title_1.png', 
-            'title_2.png', 
-            'title_3.png'  
-        ];
-
-        const getPSTTime = () => {
-            return new Date().toLocaleTimeString('en-US', { 
-                timeZone: 'America/Los_Angeles', 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        };
-
         const App = () => {
             const [isMonitorUp, setIsMonitorUp] = useState(false);
             const [activeCamObj, setActiveCamObj] = useState(cameraData[0]);
             const [isTransitioning, setIsTransitioning] = useState(false);
             const [hasVideoError, setHasVideoError] = useState(false);
-            const [time, setTime] = useState(getPSTTime());
+            const [time, setTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
             const [isMenuOpen, setIsMenuOpen] = useState(false);
             const [isCreditsOpen, setIsCreditsOpen] = useState(false);
             const [isStaticMuted, setIsStaticMuted] = useState(false);
             const [isBlipMuted, setIsBlipMuted] = useState(false);
-            
-            const [currentTitleFrameIndex, setCurrentTitleFrameIndex] = useState(0);
 
             const videoRef = useRef(null);
             const activeCamera = activeCamObj.id;
@@ -166,54 +180,29 @@
             };
 
             const streamUrls = {
-                'CAM 1A': 'https://cams.blackcompany.tv/cam1a/index.m3u8',
-                'CAM 1B': 'https://cams.blackcompany.tv/cam1b/index.m3u8',
-                'CAM 1C': 'https://cams.blackcompany.tv/cam1c/index.m3u8',
-                'CAM 5':  'https://cams.blackcompany.tv/cam5/index.m3u8',
-                'CAM 7':  'https://cams.blackcompany.tv/cam7/index.m3u8',
-                'CAM 3':  'https://cams.blackcompany.tv/cam3/index.m3u8',
-                'CAM 2A': 'https://cams.blackcompany.tv/cam2a/index.m3u8',
-                'CAM 2B': 'https://cams.blackcompany.tv/cam2b/index.m3u8',
-                'CAM 4A': 'https://cams.blackcompany.tv/cam4a/index.m3u8',
-                'CAM 4B': 'https://cams.blackcompany.tv/cam4b/index.m3u8',
-                'CAM 6':  'https://cams.blackcompany.tv/cam6/index.m3u8'
+                'CAM 1A': 'https://cams.YOURDOMAIN.com/cam1a/index.m3u8',
+                'CAM 1B': 'https://cams.YOURDOMAIN.com/cam1b/index.m3u8',
+                'CAM 1C': 'https://cams.YOURDOMAIN.com/cam1c/index.m3u8',
+                'CAM 5': 'https://cams.YOURDOMAIN.com/cam5/index.m3u8',
+                'CAM 7': 'https://cams.YOURDOMAIN.com/cam7/index.m3u8',
+                'CAM 3': 'https://cams.YOURDOMAIN.com/cam3/index.m3u8',
+                'CAM 2A': 'https://cams.YOURDOMAIN.com/cam2a/index.m3u8',
+                'CAM 2B': 'https://cams.YOURDOMAIN.com/cam2b/index.m3u8',
+                'CAM 4A': 'https://cams.YOURDOMAIN.com/cam4a/index.m3u8',
+                'CAM 4B': 'https://cams.YOURDOMAIN.com/cam4b/index.m3u8',
+                'CAM 6': 'https://cams.YOURDOMAIN.com/cam6/index.m3u8'
             };
 
-            // 1. useEffect for Title Screen Twitching
             useEffect(() => {
-                TITLE_FRAMES.forEach(src => {
-                    const img = new Image();
-                    img.src = src;
-                });
-
-                if (isMonitorUp) return;
-
-                const twitchInterval = setInterval(() => {
-                    const randomChance = Math.random();
-                    if (randomChance > 0.10) {
-                        setCurrentTitleFrameIndex(0);
-                    } else {
-                        const randomGlitch = Math.floor(Math.random() * (TITLE_FRAMES.length - 1)) + 1;
-                        setCurrentTitleFrameIndex(randomGlitch);
-                    }
-                }, 80); 
-
-                return () => clearInterval(twitchInterval);
-            }, [isMonitorUp]);
-
-            // 2. useEffect for the PST Clock
-            useEffect(() => {
-                const interval = setInterval(() => setTime(getPSTTime()), 1000);
+                const interval = setInterval(() => setTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })), 1000);
                 return () => clearInterval(interval);
             }, []);
 
-            // 3. useEffect for Static Audio
             useEffect(() => {
                 toggleStaticAudio(isMonitorUp && !isStaticMuted);
                 return () => toggleStaticAudio(false);
             }, [isMonitorUp, isStaticMuted]);
 
-            // 4. useEffect for High-Speed Video Player (UPDATED)
             useEffect(() => {
                 if (!isMonitorUp) return;
                 const video = videoRef.current;
@@ -223,41 +212,53 @@
                 if (!video || !url) return;
                 setHasVideoError(false);
 
-                // CACHE BUSTER: Forces Cloudflare to fetch the absolute newest frame
                 const bypassCacheUrl = `${url}?nocache=${new Date().getTime()}`;
 
                 if (Hls.isSupported()) {
                     hls = new Hls({
-                        // ZERO PATIENCE: Tells the player to start instantly
-                        liveSyncDurationCount: 0,
-                        maxBufferLength: 2,
-                        maxMaxBufferLength: 2,
+                        maxBufferLength: 4,
+                        maxMaxBufferLength: 8,
                         lowLatencyMode: true,
+                        manifestLoadingMaxRetry: 4,
+                        levelLoadingMaxRetry: 4,
                         enableWorker: true
                     });
-                    
-                    hls.loadSource(bypassCacheUrl); 
+
+                    hls.loadSource(bypassCacheUrl);
                     hls.attachMedia(video);
-                    
+
                     hls.on(Hls.Events.MANIFEST_PARSED, () => {
                         video.play().catch(() => { });
                     });
-                    
-                    hls.on(Hls.Events.ERROR, (event, data) => { 
-                        if (data.fatal) setHasVideoError(true); 
+
+                    hls.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            switch (data.type) {
+                                case Hls.ErrorTypes.NETWORK_ERROR:
+                                    hls.startLoad();
+                                    break;
+                                case Hls.ErrorTypes.MEDIA_ERROR:
+                                    hls.recoverMediaError();
+                                    break;
+                                default:
+                                    hls.destroy();
+                                    setHasVideoError(true);
+                                    break;
+                            }
+                        }
                     });
                 } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                     video.src = bypassCacheUrl;
                     video.addEventListener('loadedmetadata', () => {
-                        video.play().catch(() => {});
+                        video.play().catch(() => { });
                     });
                     video.addEventListener('error', () => {
                         setHasVideoError(true);
                     });
                 }
-                
-                return () => { 
-                    if (hls) hls.destroy(); 
+
+                return () => {
+                    if (hls) hls.destroy();
                     if (video) {
                         video.removeAttribute('src');
                         video.load();
@@ -281,18 +282,14 @@
                     {!isMonitorUp && (
                         <div className="absolute inset-0 flex items-center justify-center z-10">
                             <img
-                                src={TITLE_FRAMES[currentTitleFrameIndex]}
-                                className="w-full h-full object-cover title-twitch grayscale contrast-125 transition-opacity duration-75"
+                                src="title.png"
+                                className="w-full h-full object-cover title-twitch grayscale contrast-125"
                                 alt="Title Screen"
-                                onError={(e) => { 
-                                    if (e.target.src !== "title.png") { e.target.src = "title.png"; }
-                                }}
+                                onError={(e) => { e.target.src = "https://via.placeholder.com/1920x1080/000000/FFFFFF?text=TITLE.PNG+NOT+FOUND"; }}
                             />
-                            
                             <div className="absolute inset-0 fnaf-static-layer opacity-[0.08] pointer-events-none mix-blend-screen"></div>
-                            
-                            <div className="absolute top-20 left-20 z-40">
-                                <p className="text-4xl opacity-60 tracking-[0.3em] font-bold text-white drop-shadow-md"></p>
+                            <div className="absolute top-20 left-20">
+                                <p className="text-4xl opacity-60 tracking-[0.3em]">SECURITY SYSTEM</p>
                             </div>
                         </div>
                     )}
@@ -310,7 +307,7 @@
                         <div className="absolute top-8 left-10 z-[80] flex flex-col items-start gap-4">
                             <div className="flex items-center gap-4 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                 <div className="w-5 h-5 bg-red-600 rounded-full animate-pulse shadow-[0_0_10px_red]"></div>
-                                <span className="text-white text-5xl tracking-widest font-bold">REC</span>
+                                <span className="text-white text-5xl tracking-widest">REC</span>
                             </div>
 
                             <button onClick={() => { setIsMenuOpen(!isMenuOpen); setIsCreditsOpen(false); }}
@@ -321,21 +318,21 @@
                             {isMenuOpen && (
                                 <div className="flex flex-col gap-2 p-3 bg-black/80 border-2 border-white/50 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.8)]">
                                     <button onClick={() => setIsStaticMuted(!isStaticMuted)}
-                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors font-bold ${isStaticMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isStaticMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
                                         STATIC: {isStaticMuted ? 'MUTED' : 'ON'}
                                     </button>
                                     <button onClick={() => setIsBlipMuted(!isBlipMuted)}
-                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors font-bold ${isBlipMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
+                                        className={`px-4 py-2 border-2 text-xl tracking-widest transition-colors ${isBlipMuted ? 'bg-red-900/80 border-red-500' : 'bg-green-900/80 border-green-500'}`}>
                                         BLIPS: {isBlipMuted ? 'MUTED' : 'ON'}
                                     </button>
                                     <button onClick={() => setIsCreditsOpen(!isCreditsOpen)}
-                                        className="px-4 py-2 border-2 border-white/50 bg-zinc-800 text-xl tracking-widest hover:bg-zinc-700 font-bold">
+                                        className="px-4 py-2 border-2 border-white/50 bg-zinc-800 text-xl tracking-widest hover:bg-zinc-700">
                                         CREDITS
                                     </button>
                                     {isCreditsOpen && (
                                         <div className="mt-2 p-3 border-t-2 border-white/20 text-lg tracking-widest leading-tight">
-                                            <p className="text-green-400 font-bold">PROJECT LEAD: jioriku</p>
-                                            <p className="font-bold">SYSTEMS ARCHITECT: GEMINI</p>
+                                            <p className="text-green-400">PROJECT LEAD: jioriku</p>
+                                            <p>SYSTEMS ARCHITECT: GEMINI</p>
                                             <p className="opacity-60 text-sm mt-2">INSPIRED BY SCOTT CAWTHON</p>
                                         </div>
                                     )}
@@ -343,14 +340,14 @@
                             )}
                         </div>
 
-                        <div className="absolute top-8 right-10 z-[70] text-right text-5xl tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)] font-bold">
+                        <div className="absolute top-8 right-10 z-[70] text-right text-5xl tracking-widest drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                             {time}
                         </div>
 
                         <div className="absolute bottom-24 right-10 z-[70] w-[400px] flex flex-col items-end">
                             <div className="text-right text-white mb-2 pr-2 drop-shadow-[2px_2px_0_rgba(0,0,0,1)]">
                                 <div className="text-3xl font-bold tracking-widest opacity-80">{activeCamObj.name.toUpperCase()}</div>
-                                <div className="text-2xl font-bold opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
+                                <div className="text-2xl opacity-60">CAMERA - {activeCamObj.id.replace('CAM ', '')}</div>
                             </div>
                             <div className="relative w-[350px] h-[350px] bg-black/40 border-2 border-zinc-500/30 p-2 shadow-2xl backdrop-blur-sm mb-8">
                                 <div className="absolute inset-0 pointer-events-none opacity-40">
